@@ -18,6 +18,10 @@ class User(db.Model):
     created_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     updated_on = db.Column(db.DateTime, onupdate=datetime.datetime.now)
 
+    # @property
+    # def password(self):
+    #     raise AttributeError('password is not a readable attribute')
+
     @hybrid_property
     def password(self):
         return self._password
