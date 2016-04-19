@@ -2,6 +2,9 @@ import os
 import base64
 import tempfile
 import unittest
+
+from flask import json
+
 from api.app import create_app
 from api.models import db, User
 
@@ -30,18 +33,38 @@ class TestAPI(unittest.TestCase):
         os.close(self.db_fd)
         os.unlink(self.app.config['DATABASE'])
 
+    def test_bad_auth(self):
+        rv = self.open_with_auth('/v1/users', 'GET', 'abc', 'def')
+        self.assertEqual(rv.status_code, 401)
+
     def test_list_users(self):
-        import ipdb;ipdb.set_trace()
-        # rv = self.app.get('/v1/users')
-        pass
+        rv = self.open_with_auth('/v1/users', 'GET',
+                                 self.default_username,
+                                 self.default_password)
+
+        computed = json.loads(rv.data)
+        expected = {'response': [{'username': 'steve'}]}
+
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(computed, expected)
 
 
     def open_with_auth(self, url, method, username, password):
+
+        auth_string = username + ':' + password
+
+        # encode in utf need for python 3 and greater
+        auth_byte = auth_string.encode('utf-8')
+
+        basic = base64.b64encode(auth_byte)
+
+        #decode in utf=8 string for the header
+        str_basic = basic.decode('utf-8')
+
         return self.client.open(url,
             method=method,
             headers={
-                'Authorization': 'Basic ' + base64.b64encode(username + \
-                ":" + password)
+                'Authorization': 'Basic %s' %str_basic
             }
         )
 
