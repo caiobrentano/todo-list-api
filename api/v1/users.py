@@ -3,9 +3,6 @@ from flask import abort, jsonify, request
 from ..models import db, User
 from . import api
 
-@api.route('/healthcheck', methods=['GET'])
-def healthcheck():
-    return 'hello world', 200
 
 @api.route('/users', methods=['GET'])
 def list_user():
@@ -33,4 +30,7 @@ def create_user():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({'username': user.username}), 201
+    resp = jsonify({'username': user.username})
+    resp.status_code = 201
+
+    return resp

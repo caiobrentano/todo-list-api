@@ -48,8 +48,18 @@ class TestAPI(unittest.TestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(computed, expected)
 
+    def test_create_user(self):
 
-    def open_with_auth(self, url, method, username, password):
+        data = json.dumps(dict(username='user01', password='secret'))
+        rv = self.open_with_auth('/v1/users', 'POST', self.default_username, self.default_password, data=data)
+
+        computed = json.loads(rv.data)
+        expected = {'username': 'user01'}
+
+        self.assertEqual(rv.status_code, 201)
+        self.assertEqual(computed, expected)
+
+    def open_with_auth(self, url, method, username, password, data=None):
 
         auth_string = username + ':' + password
 
@@ -64,8 +74,10 @@ class TestAPI(unittest.TestCase):
         return self.client.open(url,
             method=method,
             headers={
-                'Authorization': 'Basic %s' %str_basic
-            }
+                'Authorization': 'Basic %s' %str_basic,
+                'content-type': 'application/json',
+            },
+            data=data,
         )
 
 if __name__ == '__main__':
